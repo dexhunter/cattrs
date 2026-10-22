@@ -657,12 +657,13 @@ class BaseConverter:
         """Our version of `attrs.astuple`, so we can call back to us."""
         attrs = fields(obj.__class__)
         dispatch = self._unstructure_func.dispatch
-        res = []
-        for a in attrs:
-            name = a.name
-            v = getattr(obj, name)
-            res.append(dispatch(a.type or v.__class__)(v))
-        return tuple(res)
+        return tuple(
+            [
+                dispatch(a.type or v.__class__)(v)
+                for a in attrs
+                for v in (getattr(obj, a.name),)
+            ]
+        )
 
     def _unstructure_seq(self, seq: Sequence[T]) -> Sequence[T]:
         """Convert a sequence to primitive equivalents."""
